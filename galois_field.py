@@ -7,7 +7,7 @@ class GaloisField(object):
         self.x_to_w = 1 << w 
         self.modulus = modulus
         self.gflog, self.gfilog = self.build_log_table()
-        
+        self.vender_mat = self.build_vender_mat()
         
     def build_log_table(self):
         gflog = np.zeros(self.x_to_w, dtype=np.int)
@@ -21,23 +21,45 @@ class GaloisField(object):
                 x = x ^ self.modulus
         return gflog, gfilog
     
+    def build_vender_mat(self):
+        vender_mat = np.zeros((self.config['parity_disks_num'], self.config['data_disks_num']), dtype=np.int)
+        for i in range(self.config['parity_disks_num']):
+            for j in range(self.config['data_disks_num']):
+                vander_mat[i][j] = self.power(j+1, i)
+        return vender_mat
+        
     def add(self, x, y):
         return x ^ y
     
     def sub(self, x, y):
         return x ^ y
     
+    def power(self, x, n):
+        n %= self.x_to_w - 1
+        result = 1
+        while n:
+            if n == 0:
+                return result
+            n -= 1
+            result = self.multiply(x, result)
+
     def multiply(self, x, y):
         if x == 0 or y == 0:
             return 0
-        return self.gfilog[(self.gflog[x] + self.gflog[y]) % (self.x_to_w - 1)]
+        sum_log = self.gflog[x] + self.gflog[y]
+        if sum_log >= self.x_to_w - 1:
+            sum_log -= self.x_to_w - 1
+        return self.gfilog[sum_log]
         
     def divide(self, x, y):
         if y == 0:
             raise ZeroDivisionError
         if x == 0:
             return 0
-        return self.gfilog[(self.gflog[x] + self.x_to_w - self.gflog[y]) % (self.x_to_w - 1)]
+        diff_log = self.gflog[x] - self.gflog[y]
+        if diff_log < 0:
+            diff_log += self.x_to_w - 1
+        return self.gfilog[diff_log]
     
     def dot(self, x, y):
         if x.size != y.size:
@@ -57,8 +79,8 @@ class GaloisField(object):
         return result
     
     def inverse(self, X):
-        if X == 0:
-            raise ZeroDivisionError
-        if X.shape[0] != X.shape[1]:
-            X_T = np.transpose(X)
+        # if X == 0:
+        #     raise ZeroDivisionError
+        # if X.shape[0] != X.shape[1]:
+        #     X_T = np.transpose(X)
             
