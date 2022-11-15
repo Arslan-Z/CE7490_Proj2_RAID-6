@@ -1,0 +1,4 @@
+disks_num: 6
+data_disks_num: 4
+parity_disks_num: 2
+chunk_size: 16
