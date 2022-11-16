@@ -35,7 +35,7 @@ class RAID6(object):
             config['data_disks_num'], config['data_disks_num'] + config['parity_disks_num']))
         parity_disks = [Disk(i, config['data_dir'], config["stripe_size"], type="parity") for i in parity_disks_id_list]
         return parity_disks, parity_disks_id_list
-
+    ## TODO: below are the functions that need to be implemented
     def distribute_data(self, filename):
         data = self.read_data(filename)
         self.data_length = len(data)
@@ -47,15 +47,18 @@ class RAID6(object):
             with open(os.path.join(config['data_dir'], "disk_{}".format(i)), 'rb') as f:
                 data.append(list(f.read()))
         data = data[:]
+        pass
 
     def write_to_disk(self, data):
         pass
 
     def caculate_parity(self, data):
         return self.galois_field.matmul(self.galois_field.vender_mat, data)
+        pass
 
     def corrupt_disk(self, corrupted_disks_list):
         for i in corrupted_disks_list:
-            pass
+        pass
+        
     def rebuild_data(self, corrupted_disks_list):
         pass

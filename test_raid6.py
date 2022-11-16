@@ -37,6 +37,9 @@ class TestRaid6(object):
         
         
     def test_pipeline(self):
+        file = File(1)
+        file.generate_random_data(1000)
+        raw_data = file.get_content()
         
         self.raid_controller.write_to_disk(raw_data)
         
