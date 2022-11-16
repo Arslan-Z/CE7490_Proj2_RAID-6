@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import time
 from raid.utils.config import Config
@@ -8,16 +9,30 @@ from raid.utils.raid6 import RAID6
 from raid.utils.galois_field import GaloisField
 from raid.utils.config import Config
 
+CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(CURRENT_PATH)
+# PAR_PATH = os.path.abspath(os.path.join(CURRENT_PATH, os.pardir))
+# sys.path.append(PAR_PATH)
+
+from src.raid.raid_6 import RAID_6
+from src.file import File
+from src.disk import Disk
+from src.util import Configuration, Logger
+
 class TestRaid6(object):
     def __init__(self, config):
         self.config = config
+        config['data_dir'] = os.path.join(CURRENT_PATH, config['data_dir'])
+        config['test_dir'] = os.path.join(CURRENT_PATH, config['test_dir'])
+        
         test_log_dir = self.build_test_log_dir(config)
         config["test_log_dir"] = test_log_dir
         self.raid_controller = RAID6(config)
         
-        file = File(1)
-        file.generate_random_data(1000)
-        raw_data = file.get_content()
+        # file = File(1)
+        # file.generate_random_data(1000)
+        # raw_data = file.get_content()
+        
         self.test_pipeline()
         
         
