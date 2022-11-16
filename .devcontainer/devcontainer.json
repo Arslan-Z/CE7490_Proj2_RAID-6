@@ -1,0 +1,40 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/ubuntu
+{
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "CE7490_P2",
+  "workspaceFolder": "/home/user/ce7490_proj2",
+  "shutdownAction": "stopCompose",
+  "settings": {
+    "terminal.integrated.profiles.linux": {
+      "zsh": {
+        "path": "/bin/zsh"
+      }
+    },
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "python.defaultInterpreterPath": "/home/user/miniconda/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.formatting.provider": "autopep8"
+  },
+
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "eamodio.gitlens",
+    "ms-toolsai.jupyter",
+    "christian-kohler.path-intellisense",
+    "sleistner.vscode-fileutils",
+    "exodiusstudios.comment-anchors",
+    "shd101wyy.markdown-preview-enhanced",
+    "elazarcoh.simply-view-image-for-python-debugging",
+    "yzhang.markdown-all-in-one",
+    "njpwerner.autodocstring",
+    "esbenp.prettier-vscode",
+    "donjayamanne.githistory",
+    "github.vscode-pull-request-github",
+  ],
+  "remoteUser": "user"
+}
