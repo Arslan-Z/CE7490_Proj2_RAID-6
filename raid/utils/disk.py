@@ -6,7 +6,7 @@ import shutil
 from numpy.core.shape_base import block
 
 class Disk(object):
-    def __init__(self, disk_dir, disk_id, size, stripe_size, type='data'):
+    def __init__(self, disk_id, disk_dir, stripe_size, size=100, type='data'):
         self.disk_id = disk_id
         self.size = size
         self.type = type
