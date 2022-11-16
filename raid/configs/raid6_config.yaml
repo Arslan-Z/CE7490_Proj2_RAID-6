@@ -3,3 +3,5 @@ data_disks_num: 4
 parity_disks_num: 2
 chunk_size: 16
 block_size: 4
+data_dir: "./data/"
+test_dir: "./test/"
