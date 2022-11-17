@@ -49,7 +49,7 @@ class TestRaid6(object):
         
         self.raid_controller.corrupt_disk(corrupted_disks_list)
         
-        self.raid_controller.rebuild_disk(corrupted_disks_list)
+        self.raid_controller.recover_disk(corrupted_disks_list)
         
         rebuild_data = self.raid_controller.read_from_disks(config)
         

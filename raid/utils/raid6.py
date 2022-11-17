@@ -74,6 +74,37 @@ class RAID6(object):
             remove_data(os.path.join(self.config['data_dir'], "disk_{}".format(i)))
             print("Corrupt disk {}".format(i))
         
+    def check_corruption(self):
         
-    def rebuild_data(self, corrupted_disks_list):
-        pass
+        
+    def recover_disk(self, corrupted_disks_list):
+        assert len(corrupted_disks_list) <= self.config['parity_disks_num']
+        
+        healthy_data_disks = [i for i in self.data_disks_id_list if i not in corrupted_disks_list]
+        healthy_parity_disks = [i for i in self.parity_disks_id_list if i not in corrupted_disks_list]
+        
+        healthy_data = [read_data(os.path.join(self.config['data_dir'], "disk_{}".format(i))) for i in healthy_data_disks]
+        healthy_parity = [read_data(os.path.join(self.config['data_dir'], "disk_{}".format(i))) for i in healthy_parity_disks]
+        
+        #matrix A concatenated by n x n identity matrix and vandermond matrix
+        mat_A = np.concatenate([np.eye(self.config['data_disks_num'], dtype=int), self.galois_field.vender_mat], axis=0)
+        mat_A_delete = np.delete(mat_A, obj=corrupted_disks_list, axis=0)
+        
+        #matrix E concatenated vector by byte in data disks and checksums
+        mat_E_delete = np.concatenate([np.asarray(healthy_data), np.asarray(healthy_parity)], axis=0)
+        
+        mat_D = self.galois_field.matmul(self.galois_field.inv(mat_A_delete), mat_E_delete)
+        
+        mat_C = self.galois_field.matmul(self.galois_field.vender_mat, mat_D)
+        
+        mat_E = np.concatenate([mat_D, mat_C], axis=0)
+        
+        [write_data(os.path.join(self.config['data_dir'], "disk_{}".format(i)), bytes(mat_E[i,: ].tolist())) for i in corrupted_disks_list]
+        
+        print("Recover data done!")
+        
+        
+        
+        
+        
+        
