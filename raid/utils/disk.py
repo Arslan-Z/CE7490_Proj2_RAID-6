@@ -37,6 +37,10 @@ class Disk(object):
 
         data_content = self.read_from_disk()
         size_content = len(data_content)
+        
+        # stripe_num = size_content // self.stripe_size + 1
+        # total_stripe_size = stripe_num * self.stripe_size
+        
         data_blocks = []
         if size_content % self.stripe_size != 0:
             data_content += [0] * (self.stripe_size - size_content % self.stripe_size)

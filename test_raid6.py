@@ -41,7 +41,13 @@ class TestRaid6(object):
         file.generate_random_data(1000)
         raw_data = file.get_content()
         
-        self.raid_controller.write_to_disk(raw_data)
+        logical_disk = Disk(-1, self.config['data_dir'], self.config["stripe_size"], type="data")
+        
+        logical_disk.write_to_disk(raw_data)
+        data_blocks = logical_disk.get_data_blocks()
+        
+        
+        self.raid_controller.write_to_disk(data_blocks)
         
         self.raid_controller.corrupt_disk([0, 1, 2])
         
