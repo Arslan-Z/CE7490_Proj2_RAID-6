@@ -53,7 +53,9 @@ class TestRaid6(object):
         
         rebuild_data = self.raid_controller.read_from_disks(config)
         
-        write_data(os.path.join(config['test_dir'], "rebuild_data"), rebuild_data)
+        print("raw_data: ", raw_data)
+        print("rebuild_data: ", rebuild_data)
+        # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
         
     def build_test_log_dir(self, config):
         test_log_dir = os.path.join(config['test_dir'], time.strftime('%Y-%m-%d-%H-%M-%S'))
@@ -65,5 +67,5 @@ class TestRaid6(object):
     
 if __name__ == "__main__":
     config = Config("raid/configs/raid6_config.yaml")
-    test_raid6 = TestRaid6(config)
+    test_raid6 = TestRaid6(config.config)
         

@@ -25,7 +25,7 @@ class GaloisField(object):
         vender_mat = np.zeros((self.config['parity_disks_num'], self.config['data_disks_num']), dtype=np.int)
         for i in range(self.config['parity_disks_num']):
             for j in range(self.config['data_disks_num']):
-                vander_mat[i][j] = self.power(j+1, i)
+                vender_mat[i][j] = self.power(j+1, i)
         return vender_mat
         
     def add(self, x, y):
@@ -37,7 +37,7 @@ class GaloisField(object):
     def power(self, x, n):
         n %= self.x_to_w - 1
         result = 1
-        while n:
+        while True:
             if n == 0:
                 return result
             n -= 1
@@ -78,9 +78,31 @@ class GaloisField(object):
                 result[i, j] = self.dot(X[i, :], Y[:, j])
         return result
     
-    def inverse(self, X):
+    def inv(self, X):
         # if X == 0:
         #     raise ZeroDivisionError
         # if X.shape[0] != X.shape[1]:
         #     X_T = np.transpose(X)
-            
+        if X.shape[0] != X.shape[1]:
+            X_T = np.transpose(X)
+            X_ = self.matmul(X_T, X)
+        else:
+            X_ = X
+        X_ = np.concatenate((X_, np.eye(X_.shape[0], dtype=int)), axis=1)
+        dim = X_.shape[0]
+        for i in range(dim):
+            if not X_[i, i]:
+                for j in range(i+1, dim):
+                    if X_[j, i]:
+                        break
+                X_[i, :] = list(map(self.add, X_[i, :], X_[j, :]))
+            X_[i, :] = list(map(self.divide, X_[i, :], [X_[i, i]] * len(X_[i, :])))
+            for j in range(i+1, dim):
+                X_[j, :] = self.add(X_[j, :],  list(map(self.multiply, X_[i, :], [self.divide(X_[j, i], X_[i, i])] * len(X_[i, :]))))
+        for i in reversed(range(dim)):
+            for j in range(i):
+                X_[j, :] = self.add(X_[j, :], list(map(self.multiply, X_[i, :], [X_[j, i]] * len(X_[i, :]))))
+        X_inv = X_[:, dim:2*dim]
+        if X.shape[0] != X.shape[1]:
+            X_inv = self.matmul(X_inv, X_T)
+        return X_inv

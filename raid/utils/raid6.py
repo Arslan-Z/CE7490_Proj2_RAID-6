@@ -36,17 +36,15 @@ class RAID6(object):
         self.data_disks, self.data_disks_id_list = self.build_data_disks(config)
         self.parity_disks, self.parity_disks_id_list = self.build_parity_disks(config)
     
-    ## TODO: below are the functions that need to be implemented
     def set_content_size(self, content_size):
         self.content_size = content_size
         
     def read_from_disks(self, config):
         data = []
         for i in range(config['data_disks_num']):
-            file_content=read_data(os.path.join(config['data_dir'], "disk_{}".format(i)))
+            file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
             data.append(file_content)
         data = data[:self.content_size]
-        
         return data
     
     def write_to_disk(self, data_blocks):
@@ -56,14 +54,10 @@ class RAID6(object):
         data_blocks = data_blocks.reshape(self.config['data_disks_num'], self.config['chunk_size']*stripe_num)
         
         parity_blocks = self.caculate_parity(data_blocks)
-        data_and_parity = np.concatenate((data, parity), axis=0)
+        data_and_parity = np.concatenate((data_blocks, parity_blocks), axis=0)
         
         for disk, data in zip(self.data_disks + self.parity_disks, data_and_parity.tolist()):
             disk.write_to_disk(bytes(data))
-        
-        # for i in range(self.config['disks_num']):
-        #     data =  bytes(data_and_parity[i, :].tolist())
-        #     write_data(os.path.join(self.config['data_dir'], "disk_{}".format(i)), data)
         print("Write data disk and parity disk done")
 
     def caculate_parity(self, data):
@@ -74,17 +68,14 @@ class RAID6(object):
             remove_data(os.path.join(self.config['data_dir'], "disk_{}".format(i)))
             print("Corrupt disk {}".format(i))
         
-    def check_corruption(self):
-        
-        
     def recover_disk(self, corrupted_disks_list):
         assert len(corrupted_disks_list) <= self.config['parity_disks_num']
         
         healthy_data_disks = [i for i in self.data_disks_id_list if i not in corrupted_disks_list]
         healthy_parity_disks = [i for i in self.parity_disks_id_list if i not in corrupted_disks_list]
         
-        healthy_data = [read_data(os.path.join(self.config['data_dir'], "disk_{}".format(i))) for i in healthy_data_disks]
-        healthy_parity = [read_data(os.path.join(self.config['data_dir'], "disk_{}".format(i))) for i in healthy_parity_disks]
+        healthy_data = [read_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i))) for i in healthy_data_disks]
+        healthy_parity = [read_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i))) for i in healthy_parity_disks]
         
         #matrix A concatenated by n x n identity matrix and vandermond matrix
         mat_A = np.concatenate([np.eye(self.config['data_disks_num'], dtype=int), self.galois_field.vender_mat], axis=0)
@@ -92,17 +83,19 @@ class RAID6(object):
         
         #matrix E concatenated vector by byte in data disks and checksums
         mat_E_delete = np.concatenate([np.asarray(healthy_data), np.asarray(healthy_parity)], axis=0)
-        
         mat_D = self.galois_field.matmul(self.galois_field.inv(mat_A_delete), mat_E_delete)
-        
         mat_C = self.galois_field.matmul(self.galois_field.vender_mat, mat_D)
-        
         mat_E = np.concatenate([mat_D, mat_C], axis=0)
-        
-        [write_data(os.path.join(self.config['data_dir'], "disk_{}".format(i)), bytes(mat_E[i,: ].tolist())) for i in corrupted_disks_list]
+        all_disk = self.data_disks + self.parity_disks
+        corrupted_disk = [disk for disk in all_disk if disk.disk_id in corrupted_disks_list]
+        [disk.create_disk_folders(os.path.join(self.config['data_dir'], "disk_{}".format(disk.disk_id))) for disk in corrupted_disk]
+        [write_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)), bytes(mat_E[i,: ].tolist())) for i in corrupted_disks_list]
         
         print("Recover data done!")
         
+        ## TODO: below are the functions that need to be implemented
+        def check_corruption(self):
+            pass
         
         
         

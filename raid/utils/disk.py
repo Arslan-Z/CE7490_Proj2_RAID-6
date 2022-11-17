@@ -31,19 +31,19 @@ class Disk(object):
             f.write(data)
             logging.info('Write data into disk_{}'.format(self.disk_id))
 
-    def get_data_block_list(self):
+    def get_data_blocks(self):
         if self.stripe_size == None:
             raise Exception('stripe_size must be set')
 
-        data_content = self.read_from_disk()
-        size_content = len(data_content)
+        data_content = list(self.read_from_disk())
+        content_size = len(data_content)
         
         # stripe_num = size_content // self.stripe_size + 1
         # total_stripe_size = stripe_num * self.stripe_size
         
         data_blocks = []
-        if size_content % self.stripe_size != 0:
-            data_content += [0] * (self.stripe_size - size_content % self.stripe_size)
+        if content_size % self.stripe_size != 0:
+            data_content += [0 for _ in range(self.stripe_size - content_size % self.stripe_size)]
             
         data_blocks = [data_content[i:i+self.stripe_size] for i in range(0, len(data_content), self.stripe_size)]
         return data_blocks, content_size
