@@ -43,7 +43,7 @@ class RAID6(object):
         data = []
         for i in range(config['data_disks_num']):
             file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
-            data.append(file_content)
+            data+=list(file_content)
         data = data[:self.content_size]
         return data
     

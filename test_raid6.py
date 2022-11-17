@@ -33,7 +33,7 @@ class TestRaid6(object):
         
     def test_pipeline(self, config):
         file = File(1)
-        file.generate_random_data(1000)
+        file.generate_random_data(32)
         raw_data = file.get_content()
         
         logical_disk = Disk(-1, config['data_dir'], config["stripe_size"], type="data")
@@ -54,7 +54,8 @@ class TestRaid6(object):
         rebuild_data = self.raid_controller.read_from_disks(config)
         
         print("raw_data: ", raw_data)
-        print("rebuild_data: ", rebuild_data)
+        rebuild_data_str = "".join([chr(i) for i in rebuild_data])
+        print("rebuild_data: ", rebuild_data_str)
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
         
     def build_test_log_dir(self, config):

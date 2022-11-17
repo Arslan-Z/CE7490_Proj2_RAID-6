@@ -28,7 +28,7 @@ class Disk(object):
 
     def write_to_disk(self, data, mode='wb'):
         with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
-            f.write(data)
+            f.write(bytes(data))
             logging.info('Write data into disk_{}'.format(self.disk_id))
 
     def get_data_blocks(self):
@@ -36,6 +36,7 @@ class Disk(object):
             raise Exception('stripe_size must be set')
 
         data_content = list(self.read_from_disk())
+        print("data_content", data_content)
         content_size = len(data_content)
         
         # stripe_num = size_content // self.stripe_size + 1
