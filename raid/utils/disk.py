@@ -26,7 +26,7 @@ class Disk(object):
         with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
             return f.read()
 
-    def write_to_disk(self, data, mode='w'):
+    def write_to_disk(self, data, mode='wb'):
         with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
             f.write(data)
             logging.info('Write data into disk_{}'.format(self.disk_id))
@@ -46,7 +46,7 @@ class Disk(object):
             data_content += [0] * (self.stripe_size - size_content % self.stripe_size)
             
         data_blocks = [data_content[i:i+self.stripe_size] for i in range(0, len(data_content), self.stripe_size)]
-        return data_blocks
+        return data_blocks, content_size
 
     def create_disk_folders(self, disk_dir):
 
