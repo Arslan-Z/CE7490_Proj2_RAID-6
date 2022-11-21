@@ -49,20 +49,25 @@ class RAID6(object):
         all_disks = self.data_disks + self.parity_disks
         for i in range(config['data_disks_num']):
             disk = all_disks[i]
-            file_content = disk.read_from_disk()
-            # file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
-            data += list(file_content)
+            try:
+                file_content = disk.read_from_disk()
+                # file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
+                data += list(file_content)
+            except:
+                print("Read data disk {} failed, dir not exist".format(i))
+        # print("Len of data is {}".format(len(data)))
         data = data[:self.content_size]
         return data
 
     def write_to_disk(self, data_blocks):
-        stripe_num = len(data_blocks)
+        self.stripe_num = len(data_blocks)
 
         data_blocks = np.asarray(data_blocks, dtype=int)
         data_blocks = data_blocks.reshape(
-            self.config['data_disks_num'], self.config['chunk_size']*stripe_num)
+            self.config['data_disks_num'], self.config['chunk_size']*self.stripe_num)
 
         parity_blocks = self.caculate_parity(data_blocks)
+        self.parity = parity_blocks
         data_and_parity = np.concatenate((data_blocks, parity_blocks), axis=0)
 
         for disk, data in zip(self.data_disks + self.parity_disks, data_and_parity.tolist()):
@@ -127,6 +132,28 @@ class RAID6(object):
 
         print("Recover data done!")
 
-        # TODO: below are the functions that need to be implemented
-        def check_corruption(self):
-            pass
+    def check_corruption(self):
+        data_content = self.read_from_disks(self.config)
+        data_content = np.asarray(data_content, dtype=int)
+        # print(data_content.shape)
+        data_content = data_content.reshape(
+            self.config['data_disks_num'], -1)
+        # print(data_content.shape)
+        # content_size = len(data_content)
+        # data_blocks = []
+        # if content_size % self.config["stripe_size"] != 0:
+        #     data_content += [0 for _ in range(self.config["stripe_size"] -
+        #                                       content_size % self.config["stripe_size"])]
+        # data_blocks = [data_content[i:i+self.config["stripe_size"]]
+        #                for i in range(0, len(data_content), self.config["stripe_size"])]
+
+        # data_content = np.asarray(data_content, dtype=int)
+        # data_content = data_content.reshape(
+        #     self.config['data_disks_num'], self.config['chunk_size']*self.stripe_num)
+        parity = self.caculate_parity(
+            data_content[0:self.config['data_disks_num']])
+        is_corrupted = np.bitwise_xor(np.array(self.parity), np.array(parity))
+        if np.count_nonzero(is_corrupted) == 0:
+            print("No corrupted disks")
+        else:
+            print("Exist corrupted data!")

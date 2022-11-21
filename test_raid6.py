@@ -33,13 +33,13 @@ class TestRaid6(object):
 
     def prepare_data(self, config):
         file = File(1)
-        file.generate_random_data(32)
+        file.generate_random_data(config["random_data_size"])
         raw_data = file.get_content()
         print("raw_data: ", raw_data)
-        logical_disk = Disk(-1, config['data_dir'],
-                            config["stripe_size"], type="data")
-        logical_disk.write_to_disk(raw_data)
-        data_blocks, content_size = logical_disk.get_data_blocks()
+        disk = Disk(-1, config['data_dir'],
+                    config["stripe_size"], type="data")
+        disk.write_to_disk(raw_data)
+        data_blocks, content_size = disk.get_data_blocks()
         return data_blocks, content_size
 
     def init_raid_controller(self, content_size, data_blocks):
@@ -64,17 +64,37 @@ class TestRaid6(object):
         return rebuild_data
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
 
+    def manual_distort_data(self, disk_id, distort_loc):
+        disk = self.raid_controller.data_disks[disk_id]
+        original_data = disk.read_from_disk()
+        # print("original_data: ", original_data)
+        distorted_data = original_data
+        distorted_data[distort_loc] = original_data[distort_loc]+1
+        print("Manual distort data on disk_{} at location {}: ".format(
+            disk_id, distort_loc))
+        disk.write_to_disk(distorted_data)
+
+    def test_corruption_detection(self, disk_id, distort_loc):
+        self.manual_distort_data(disk_id=disk_id, distort_loc=distort_loc)
+        print("Run corruption detection!")
+        self.raid_controller.check_corruption()
+        print("Finish corruption detection!")
+
     def test_pipeline(self, config):
 
         data_blocks, content_size = self.prepare_data(config)
 
         self.init_raid_controller(content_size, data_blocks)
 
-        corrupted_disks_list = [0, 2]
+        self.test_corruption_detection(disk_id=0, distort_loc=0)
+        # detected_corrupted_disks = self.test_corrupted_disks_detection()
+
+        corrupted_disks_list = [0, 1]
 
         self.test_corrupt_disk(corrupted_disks_list)
 
-        rebuild_data = self.test_recovery_disk(config, corrupted_disks_list)
+        rebuild_data = self.test_recovery_disk(
+            config, corrupted_disks_list)
 
         # self.raid_controller.recover_disk(corrupted_disks_list)
 

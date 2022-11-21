@@ -22,6 +22,7 @@ On top of the minimal implementation, further features as showed below are also 
 - [ ] Support mutable files, taking into account update of the content, and consistency issues.
 - [ ] Support larger set of configurations (than just 6+2, using a more full-fledged implementation).
 - [ ] Optimize the computation operations.
+
 ## Installation
 
 <details>
@@ -29,17 +30,17 @@ On top of the minimal implementation, further features as showed below are also 
 
 1. Install Docker, simply run
 
-    ```shell
-    curl <https://get.docker.com> | sh
-    ```
+   ```shell
+   curl <https://get.docker.com> | sh
+   ```
 
 2. Install docker-compose
 
-    ```shell
-    sudo curl -L "[https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)](https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname%20-s)-$(uname%20-m))" -o /usr/local/bin/docker-compose
+   ```shell
+   sudo curl -L "[https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)](https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname%20-s)-$(uname%20-m))" -o /usr/local/bin/docker-compose
 
-    sudo chmod +x /usr/local/bin/docker-compose
-    ```
+   sudo chmod +x /usr/local/bin/docker-compose
+   ```
 
 </details>
 
@@ -63,5 +64,10 @@ docker attach {container name}
 
 Detach from the container without stopping it, press `ctrl+p` and `ctrl+q`.
 
-
 ## Quick Start
+
+Start the test pipeline
+
+```shell
+python test_raid6.py
+```

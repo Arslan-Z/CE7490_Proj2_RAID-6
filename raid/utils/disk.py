@@ -4,6 +4,7 @@ import logging
 import shutil
 
 from numpy.core.shape_base import block
+from raid.utils.utils import read_data, write_data, remove_data
 
 
 class Disk(object):
@@ -24,13 +25,14 @@ class Disk(object):
         return self.disk_id
 
     def read_from_disk(self, mode='rb'):
-        with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
-            return list(f.read())
+        data = read_data(os.path.join(self.disk_dir,
+                                      'disk_{}'.format(self.disk_id)), mode)
+        return data
 
     def write_to_disk(self, data, mode='wb'):
-        with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
-            f.write(bytes(data))
-            logging.info('Write data into disk_{}'.format(self.disk_id))
+        write_data(os.path.join(self.disk_dir,
+                   'disk_{}'.format(self.disk_id)), data, mode)
+        logging.info('Write data into disk_{}'.format(self.disk_id))
 
     def get_data_blocks(self):
         if self.stripe_size == None:

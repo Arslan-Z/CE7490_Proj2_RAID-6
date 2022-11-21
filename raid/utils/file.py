@@ -3,6 +3,7 @@ import string
 import logging
 import os
 
+
 class File(object):
     def __init__(self, file_id):
         self.data = None

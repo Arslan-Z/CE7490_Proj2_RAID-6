@@ -2,13 +2,13 @@ import os
 import shutil
 
 
-def write_data(file_name, data):
-    with open(file_name, 'wb') as f:
+def write_data(file_name, data, mode='wb'):
+    with open(file_name, mode) as f:
         f.write(bytes(data))
 
 
-def read_data(file_name):
-    with open(file_name, 'rb') as f:
+def read_data(file_name, mode='rb'):
+    with open(file_name, mode) as f:
         data = f.read()
     return list(data)
 

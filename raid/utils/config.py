@@ -2,16 +2,19 @@ import os
 import time
 import yaml
 
+
 class Config(object):
     def __init__(self, config_file):
         self.config_file = config_file
         self.config = self.load_config()
-        assert self.config['disks_num'] == self.config['data_disks_num'] + self.config['parity_disks_num']
+        assert self.config['disks_num'] == self.config['data_disks_num'] + \
+            self.config['parity_disks_num']
         assert self.config['block_size'] % 4 == 0
         assert self.config['chunk_size'] % self.config["block_size"] == 0
-        self.config["stripe_size"] = self.config['chunk_size'] * self.config['data_disks_num']
+        self.config["stripe_size"] = self.config['chunk_size'] * \
+            self.config['data_disks_num']
         self.print_config()
-    
+
     def print_config(self):
         print("Load config file: {}".format(self.config_file))
         print("disks_num: {}".format(self.config['disks_num']))
@@ -26,7 +29,8 @@ class Config(object):
 
     def get_config(self):
         return self.config
-    
+
+
 if __name__ == '__main__':
     config = Config('raid6_config.yaml')
     # config.print_config()
