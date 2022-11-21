@@ -65,7 +65,8 @@ class RAID6(object):
     def write_to_disk(self, data_blocks):
         # print("data_blocks : {}".format(data_blocks))
         # print("stripe_num : {}".format(self.stripe_num))
-        data_blocks = np.asarray(data_blocks, dtype=int)
+        # data_blocks = np.asarray(data_blocks, dtype=int)
+        data_blocks = np.asarray(data_blocks)
         data_blocks = data_blocks.reshape(
             self.config['data_disks_num'], self.config['chunk_size']*self.stripe_num)
 
@@ -73,8 +74,8 @@ class RAID6(object):
         self.parity = parity_blocks
         data_and_parity = np.concatenate((data_blocks, parity_blocks), axis=0)
 
-        for disk, data in zip(self.data_disks + self.parity_disks, data_and_parity.tolist()):
-            disk.write_to_disk(bytes(data))
+        for disk, data in zip(self.data_disks + self.parity_disks, data_and_parity):
+            disk.write_to_disk(data.tolist())
         print("Write data disk and parity disk done")
 
     def caculate_parity(self, data):

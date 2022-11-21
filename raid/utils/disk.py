@@ -8,7 +8,7 @@ from raid.utils.utils import read_data, write_data, remove_data
 
 
 class Disk(object):
-    def __init__(self, disk_id, disk_dir, stripe_size, size=100, type='data'):
+    def __init__(self, disk_id, disk_root_dir, stripe_size, size=100, type='data'):
         self.disk_id = disk_id
         self.size = size
         self.type = type
@@ -16,8 +16,10 @@ class Disk(object):
         #     self.override = False
         # else:
         #     self.override = True
-        self.disk_dir = self.create_disk_folders(
-            disk_dir=os.path.join(disk_dir, 'disk_{}'.format(self.disk_id)))
+        self.disk_dir = os.path.join(disk_root_dir, 'disk_{}'.format(self.disk_id))
+        self.disk_file = os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id))
+
+        self.create_disk_folders(self.disk_dir)
         self.data_blocks = None
         self.stripe_size = stripe_size
 
@@ -25,20 +27,18 @@ class Disk(object):
         return self.disk_id
 
     def read_from_disk(self, mode='rb'):
-        data = read_data(os.path.join(self.disk_dir,
-                                      'disk_{}'.format(self.disk_id)), mode)
+        data = read_data(self.disk_file, mode)
         return data
 
     def write_to_disk(self, data, mode='wb'):
-        write_data(os.path.join(self.disk_dir,
-                   'disk_{}'.format(self.disk_id)), data, mode)
-        logging.info('Write data into disk_{}'.format(self.disk_id))
+        write_data(self.disk_file, data, mode)
+        # logging.info('Write data into disk_{}'.format(self.disk_id))
 
-    def get_data_blocks(self):
+    def get_data_blocks(self, data_content):
         if self.stripe_size == None:
             raise Exception('stripe_size must be set')
 
-        data_content = self.read_from_disk()
+        # data_content = self.read_from_disk()
         # print("data_content", data_content)
         content_size = len(data_content)
         print("content_size", content_size)
@@ -62,8 +62,8 @@ class Disk(object):
         # if path dont exist
         if not os.path.exists(disk_dir):
             os.makedirs(disk_dir)
-            logging.info('Disk {0} is created at {1}'.format(
-                self.disk_id, str(disk_dir)))
+            # logging.info('Disk {0} is created at {1}'.format(
+            #     self.disk_id, str(disk_dir)))
         else:  # if exists alr delete
             shutil.rmtree(disk_dir)
             os.makedirs(disk_dir)
@@ -74,4 +74,4 @@ class Disk(object):
             #     logging.info(
             #         'Disk {0} is already created'.format(str(disk_dir)))
 
-        return disk_dir
+        

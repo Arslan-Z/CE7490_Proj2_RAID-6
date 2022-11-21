@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import time
+import PIL.Image as Image
 from raid.utils.config import Config
 from raid.utils.disk import Disk
 from raid.utils.file import File
@@ -30,12 +31,15 @@ class TestRaid6(object):
 
         self.raid_controller = RAID6(config)
 
-        self.test_pipeline(config)
+        if config["mode"] == 1:
+            self.test_pipeline(config, self.prepare_real_data)
+        else:
+            self.test_pipeline(config, self.prepare_synthetic_data)
 
     def print_spliter(self):
         print("=============================================")
 
-    def prepare_data(self, config):
+    def prepare_synthetic_data(self, config):
         file = File(1)
         file.generate_random_data(config["random_data_size"])
         raw_data = file.get_content()
@@ -43,7 +47,37 @@ class TestRaid6(object):
         disk = Disk(-1, config['data_dir'],
                     config["stripe_size"], type="data")
         disk.write_to_disk(raw_data)
-        data_blocks, content_size, total_stripe = disk.get_data_blocks()
+        data_blocks, content_size, total_stripe = disk.get_data_blocks(
+            disk.read_from_disk())
+        return data_blocks, content_size, total_stripe
+
+    def prepare_real_data(self, config):
+        disk = Disk(-2, config['data_dir'], config["stripe_size"], type="data")
+        data = read_data(os.path.join(
+            CURRENT_PATH, "real_data/")+config["real_file_name"])
+        # # print("data type: ", type(data))
+        # img = Image.open(os.path.join(
+        #     CURRENT_PATH, "real_data/")+config["real_file_name"])
+        # print("img.size: ", img.size)
+        # self.img_size = img.size
+        # self.img_mode = img.mode
+        # # data = np.asarray(img, dtype=np.uint8).flatten().tolist()
+        
+        # # pixels = list(img.getdata())
+        # pixels_array = np.array(img)
+        # # print("pixels[0]: ", pixels_array[0])
+        # # print("pixels[0] type: ", type(pixels_array[0]))
+        # # # print("pixels: ", pixels)
+        # # print("len(pixels): ", len(pixels_array))
+        # # # width, height = img.size
+        # # # pixels = [pixels[i * width:(i + 1) * width] for i in xrange(height)]
+        # data = pixels_array.flatten().tolist()
+
+        # data = data.flatten()
+        # data = list(img)
+        # print("data type:", type(data))
+        # print("real data: ", data)
+        data_blocks, content_size, total_stripe = disk.get_data_blocks(data)
         return data_blocks, content_size, total_stripe
 
     def init_raid_controller(self, data_blocks, content_size, total_stripe):
@@ -61,11 +95,6 @@ class TestRaid6(object):
         # print("rebuild_data: ", rebuild_data)
         # print("raw_data: ", raw_data)
         # rebuild_data_str = [chr(i) for i in rebuild_data]
-        rebuild_data_str = "".join([chr(i) for i in rebuild_data])
-        rebuild_data = str_to_list(rebuild_data_str)
-
-        # print("rebuild_data str: ", rebuild_data_str)
-        # print("rebuild_data: ", rebuild_data)
 
         return rebuild_data
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
@@ -91,16 +120,18 @@ class TestRaid6(object):
         self.raid_controller.check_corruption()
         print("Finish detection!")
 
-    def test_pipeline(self, config):
+    def test_pipeline(self, config, data_generation):
         self.print_spliter()
-        data_blocks, content_size, total_stripe = self.prepare_data(config)
+        data_blocks, content_size, total_stripe = data_generation(
+            config)
 
         self.print_spliter()
         self.init_raid_controller(data_blocks, content_size, total_stripe)
 
-        self.print_spliter()
-        self.test_corruption_detection(disk_id=0, distort_loc=0)
-        # detected_corrupted_disks = self.test_corrupted_disks_detection()
+        # self.print_spliter()
+        # self.test_corruption_detection(disk_id=0, distort_loc=0)
+        # # detected_corrupted_disks = self.test_corrupted_disks_detection()
+
         self.print_spliter()
         corrupted_disks_list = [0, 1]
         self.test_corrupt_disk(corrupted_disks_list)
@@ -113,6 +144,44 @@ class TestRaid6(object):
         print(" "*9+"Finish all test pipeline!")
         self.print_spliter()
 
+        if self.config["mode"] == 0:
+            # rebuild_data_str = "".join([chr(i) for i in rebuild_data])
+            # rebuild_data = str_to_list(rebuild_data_str)
+            # print("rebuild_data str: ", rebuild_data_str)
+            # print("rebuild_data: ", rebuild_data)
+            os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
+            file_name = os.path.join(
+                config['data_dir'], "rebuild_data/")+"rebuild_data"
+            with open(file_name, mode="wb") as f:
+                # f.write(str(rebuild_data))
+                f.write(bytes(rebuild_data))
+                # f.write(rebuild_data_str)
+                
+
+        elif self.config["mode"] == 1:
+            file_name = os.path.join(
+                CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"]
+            with open(file_name, mode="wb") as f:
+                f.write(bytes(rebuild_data))
+            # # print("rebuild_data type: ", type(rebuild_data))
+            # # w, h = self.img_size
+            # rebuild_data = np.array(rebuild_data)
+            # print("rebuild_data shape: ", rebuild_data.shape)
+
+            # # print("rebuild_data: ", rebuild_data)
+
+            # # write_data(os.path.join(
+            # #     CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"], rebuild_data)
+            # file_name = os.path.join(
+            #     CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"]
+            # rebuild_img = Image.fromarray(np.asarray(rebuild_data, dtype=np.uint8), mode=self.img_mode)
+            # rebuild_img.save(file_name)
+            # # with open(file_name, mode="wb") as f:
+            # #     # f.write(str(rebuild_data))
+            # #     # f.write(rebuild_data)
+            # #     f.write(bytes(rebuild_data))
+
+        print("Done writing rebuild data!")
         # self.raid_controller.recover_disk(corrupted_disks_list)
 
         # rebuild_data = self.raid_controller.read_from_disks(config)
