@@ -18,7 +18,8 @@ sys.path.append(CURRENT_PATH)
 
 class TestRaid6(object):
     def __init__(self, config):
-
+        self.print_spliter()
+        print(" "*9+"Start the test pipeline!")
         config['data_dir'] = os.path.join(CURRENT_PATH, config['data_dir'])
         config['test_dir'] = os.path.join(CURRENT_PATH, config['test_dir'])
 
@@ -31,6 +32,9 @@ class TestRaid6(object):
 
         self.test_pipeline(config)
 
+    def print_spliter(self):
+        print("=============================================")
+
     def prepare_data(self, config):
         file = File(1)
         file.generate_random_data(config["random_data_size"])
@@ -39,11 +43,12 @@ class TestRaid6(object):
         disk = Disk(-1, config['data_dir'],
                     config["stripe_size"], type="data")
         disk.write_to_disk(raw_data)
-        data_blocks, content_size = disk.get_data_blocks()
-        return data_blocks, content_size
+        data_blocks, content_size, total_stripe = disk.get_data_blocks()
+        return data_blocks, content_size, total_stripe
 
-    def init_raid_controller(self, content_size, data_blocks):
+    def init_raid_controller(self, data_blocks, content_size, total_stripe):
         self.raid_controller.set_content_size(content_size)
+        self.raid_controller.set_total_stripe(total_stripe)
         self.raid_controller.write_to_disk(data_blocks)
 
     def test_corrupt_disk(self, corrupted_disks_list):
@@ -61,6 +66,7 @@ class TestRaid6(object):
 
         # print("rebuild_data str: ", rebuild_data_str)
         # print("rebuild_data: ", rebuild_data)
+
         return rebuild_data
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
 
@@ -75,26 +81,35 @@ class TestRaid6(object):
         disk.write_to_disk(distorted_data)
 
     def test_corruption_detection(self, disk_id, distort_loc):
-        self.manual_distort_data(disk_id=disk_id, distort_loc=distort_loc)
-        print("Run corruption detection!")
+        print("Run corruption detection")
         self.raid_controller.check_corruption()
-        print("Finish corruption detection!")
+        print("Finish detection")
+        self.manual_distort_data(disk_id=disk_id, distort_loc=distort_loc)
+        print("Run corruption detection")
+        self.raid_controller.check_corruption()
+        print("Finish detection!")
 
     def test_pipeline(self, config):
+        self.print_spliter()
+        data_blocks, content_size, total_stripe = self.prepare_data(config)
 
-        data_blocks, content_size = self.prepare_data(config)
+        self.print_spliter()
+        self.init_raid_controller(data_blocks, content_size, total_stripe)
 
-        self.init_raid_controller(content_size, data_blocks)
-
+        self.print_spliter()
         self.test_corruption_detection(disk_id=0, distort_loc=0)
         # detected_corrupted_disks = self.test_corrupted_disks_detection()
-
+        self.print_spliter()
         corrupted_disks_list = [0, 1]
-
         self.test_corrupt_disk(corrupted_disks_list)
 
+        self.print_spliter()
         rebuild_data = self.test_recovery_disk(
             config, corrupted_disks_list)
+        self.print_spliter()
+
+        print(" "*9+"Finish all test pipeline!")
+        self.print_spliter()
 
         # self.raid_controller.recover_disk(corrupted_disks_list)
 

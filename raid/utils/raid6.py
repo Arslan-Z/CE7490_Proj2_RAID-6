@@ -44,6 +44,9 @@ class RAID6(object):
     def set_content_size(self, content_size):
         self.content_size = content_size
 
+    def set_total_stripe(self, total_stripe):
+        self.stripe_num = total_stripe
+
     def read_from_disks(self, config):
         data = []
         all_disks = self.data_disks + self.parity_disks
@@ -60,8 +63,8 @@ class RAID6(object):
         return data
 
     def write_to_disk(self, data_blocks):
-        self.stripe_num = len(data_blocks)
-
+        # print("data_blocks : {}".format(data_blocks))
+        # print("stripe_num : {}".format(self.stripe_num))
         data_blocks = np.asarray(data_blocks, dtype=int)
         data_blocks = data_blocks.reshape(
             self.config['data_disks_num'], self.config['chunk_size']*self.stripe_num)

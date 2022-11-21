@@ -38,7 +38,7 @@ class Disk(object):
         if self.stripe_size == None:
             raise Exception('stripe_size must be set')
 
-        data_content = list(self.read_from_disk())
+        data_content = self.read_from_disk()
         # print("data_content", data_content)
         content_size = len(data_content)
         print("content_size", content_size)
@@ -50,10 +50,12 @@ class Disk(object):
         if content_size % self.stripe_size != 0:
             data_content += [0 for _ in range(self.stripe_size -
                                               content_size % self.stripe_size)]
-
+        total_stripe = len(data_content) // self.stripe_size
+        print("total_stripe", total_stripe)
         data_blocks = [data_content[i:i+self.stripe_size]
                        for i in range(0, len(data_content), self.stripe_size)]
-        return data_blocks, content_size
+        # print("data_blocks len", len(data_blocks))
+        return data_blocks, content_size, total_stripe
 
     def create_disk_folders(self, disk_dir):
 
