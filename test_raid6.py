@@ -55,12 +55,12 @@ class TestRaid6(object):
         rebuild_data = self.raid_controller.read_from_disks(config)
         # print("rebuild_data: ", rebuild_data)
         # print("raw_data: ", raw_data)
-        rebuild_data_str = "".join([chr(i) for i in rebuild_data])
         # rebuild_data_str = [chr(i) for i in rebuild_data]
-        print("rebuild_data str: ", rebuild_data_str)
+        rebuild_data_str = "".join([chr(i) for i in rebuild_data])
         rebuild_data = str_to_list(rebuild_data_str)
 
-        print("rebuild_data: ", rebuild_data)
+        # print("rebuild_data str: ", rebuild_data_str)
+        # print("rebuild_data: ", rebuild_data)
         return rebuild_data
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
 

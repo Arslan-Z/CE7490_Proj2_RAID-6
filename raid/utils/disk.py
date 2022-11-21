@@ -41,6 +41,7 @@ class Disk(object):
         data_content = list(self.read_from_disk())
         # print("data_content", data_content)
         content_size = len(data_content)
+        print("content_size", content_size)
 
         # stripe_num = size_content // self.stripe_size + 1
         # total_stripe_size = stripe_num * self.stripe_size
