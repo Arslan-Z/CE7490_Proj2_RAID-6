@@ -33,7 +33,7 @@ class RAID6(object):
 
     def organize_disks(self, config):
         try:
-            shutil.rmtree(config['data_dir'])
+            shutil.rmtree(os.path.join(config['data_dir'], "disks"))
         except:
             pass
         self.data_disks, self.data_disks_id_list = self.build_data_disks(
@@ -84,7 +84,7 @@ class RAID6(object):
     def corrupt_disk(self, corrupted_disks_list):
         for i in corrupted_disks_list:
             remove_data(os.path.join(
-                self.config['data_dir'], "disk_{}".format(i)))
+                self.config['data_dir']+"disks/", "disk_{}".format(i)))
             print("Corrupt disk {}".format(i))
 
     def recover_disk(self, corrupted_disks_list):
@@ -124,8 +124,7 @@ class RAID6(object):
         all_disk = self.data_disks + self.parity_disks
         corrupted_disk = [
             disk for disk in all_disk if disk.disk_id in corrupted_disks_list]
-        [disk.create_disk_folders(os.path.join(self.config['data_dir'], "disk_{}".format(
-            disk.disk_id))) for disk in corrupted_disk]
+        [disk.create_disk_folders() for disk in corrupted_disk]
 
         for i, disk in zip(corrupted_disks_list, corrupted_disk):
             disk.write_to_disk(bytes(mat_E[i, :].tolist()))

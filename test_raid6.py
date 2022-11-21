@@ -54,29 +54,7 @@ class TestRaid6(object):
     def prepare_real_data(self, config):
         disk = Disk(-2, config['data_dir'], config["stripe_size"], type="data")
         data = read_data(os.path.join(
-            CURRENT_PATH, "real_data/")+config["real_file_name"])
-        # # print("data type: ", type(data))
-        # img = Image.open(os.path.join(
-        #     CURRENT_PATH, "real_data/")+config["real_file_name"])
-        # print("img.size: ", img.size)
-        # self.img_size = img.size
-        # self.img_mode = img.mode
-        # # data = np.asarray(img, dtype=np.uint8).flatten().tolist()
-        
-        # # pixels = list(img.getdata())
-        # pixels_array = np.array(img)
-        # # print("pixels[0]: ", pixels_array[0])
-        # # print("pixels[0] type: ", type(pixels_array[0]))
-        # # # print("pixels: ", pixels)
-        # # print("len(pixels): ", len(pixels_array))
-        # # # width, height = img.size
-        # # # pixels = [pixels[i * width:(i + 1) * width] for i in xrange(height)]
-        # data = pixels_array.flatten().tolist()
-
-        # data = data.flatten()
-        # data = list(img)
-        # print("data type:", type(data))
-        # print("real data: ", data)
+            config['data_dir'], "real_data/")+config["real_file_name"])
         data_blocks, content_size, total_stripe = disk.get_data_blocks(data)
         return data_blocks, content_size, total_stripe
 
@@ -97,8 +75,22 @@ class TestRaid6(object):
         # rebuild_data_str = [chr(i) for i in rebuild_data]
 
         return rebuild_data
-        # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
+    
+    def save_rebuid_data(self, config, rebuild_data):        
+        if self.config["mode"] == 0:
+            os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
+            file_name = os.path.join(
+                config['data_dir'], "rebuild_data/")+"rebuild_data"
+            with open(file_name, mode="wb") as f:
+                f.write(bytes(rebuild_data))
 
+        elif self.config["mode"] == 1:
+            file_name = os.path.join(
+                config['data_dir'], "real_data/")+"rebuild_"+config["real_file_name"]
+            with open(file_name, mode="wb") as f:
+                f.write(bytes(rebuild_data))
+        print("Done writing rebuild data!")
+        
     def manual_distort_data(self, disk_id, distort_loc):
         disk = self.raid_controller.data_disks[disk_id]
         original_data = disk.read_from_disk()
@@ -139,61 +131,11 @@ class TestRaid6(object):
         self.print_spliter()
         rebuild_data = self.test_recovery_disk(
             config, corrupted_disks_list)
+        self.save_rebuid_data(config, rebuild_data)
         self.print_spliter()
 
         print(" "*9+"Finish all test pipeline!")
         self.print_spliter()
-
-        if self.config["mode"] == 0:
-            # rebuild_data_str = "".join([chr(i) for i in rebuild_data])
-            # rebuild_data = str_to_list(rebuild_data_str)
-            # print("rebuild_data str: ", rebuild_data_str)
-            # print("rebuild_data: ", rebuild_data)
-            os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
-            file_name = os.path.join(
-                config['data_dir'], "rebuild_data/")+"rebuild_data"
-            with open(file_name, mode="wb") as f:
-                # f.write(str(rebuild_data))
-                f.write(bytes(rebuild_data))
-                # f.write(rebuild_data_str)
-                
-
-        elif self.config["mode"] == 1:
-            file_name = os.path.join(
-                CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"]
-            with open(file_name, mode="wb") as f:
-                f.write(bytes(rebuild_data))
-            # # print("rebuild_data type: ", type(rebuild_data))
-            # # w, h = self.img_size
-            # rebuild_data = np.array(rebuild_data)
-            # print("rebuild_data shape: ", rebuild_data.shape)
-
-            # # print("rebuild_data: ", rebuild_data)
-
-            # # write_data(os.path.join(
-            # #     CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"], rebuild_data)
-            # file_name = os.path.join(
-            #     CURRENT_PATH, "real_data/")+"rebuild_"+config["real_file_name"]
-            # rebuild_img = Image.fromarray(np.asarray(rebuild_data, dtype=np.uint8), mode=self.img_mode)
-            # rebuild_img.save(file_name)
-            # # with open(file_name, mode="wb") as f:
-            # #     # f.write(str(rebuild_data))
-            # #     # f.write(rebuild_data)
-            # #     f.write(bytes(rebuild_data))
-
-        print("Done writing rebuild data!")
-        # self.raid_controller.recover_disk(corrupted_disks_list)
-
-        # rebuild_data = self.raid_controller.read_from_disks(config)
-        # # print("rebuild_data: ", rebuild_data)
-        # # print("raw_data: ", raw_data)
-        # rebuild_data_str = "".join([chr(i) for i in rebuild_data])
-        # # rebuild_data_str = [chr(i) for i in rebuild_data]
-        # print("rebuild_data str: ", rebuild_data_str)
-        # rebuild_data = str_to_list(rebuild_data_str)
-
-        # print("rebuild_data: ", rebuild_data)
-        # # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
 
     def build_test_log_dir(self, config):
         test_log_dir = os.path.join(

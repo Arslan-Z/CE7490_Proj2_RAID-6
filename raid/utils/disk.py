@@ -16,10 +16,10 @@ class Disk(object):
         #     self.override = False
         # else:
         #     self.override = True
-        self.disk_dir = os.path.join(disk_root_dir, 'disk_{}'.format(self.disk_id))
+        self.disk_dir = os.path.join(disk_root_dir, os.path.join("disks/", 'disk_{}'.format(self.disk_id)))
         self.disk_file = os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id))
 
-        self.create_disk_folders(self.disk_dir)
+        self.create_disk_folders()
         self.data_blocks = None
         self.stripe_size = stripe_size
 
@@ -57,8 +57,8 @@ class Disk(object):
         # print("data_blocks len", len(data_blocks))
         return data_blocks, content_size, total_stripe
 
-    def create_disk_folders(self, disk_dir):
-
+    def create_disk_folders(self):
+        disk_dir=self.disk_dir
         # if path dont exist
         if not os.path.exists(disk_dir):
             os.makedirs(disk_dir)
