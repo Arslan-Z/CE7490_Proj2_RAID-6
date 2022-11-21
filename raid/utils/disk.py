@@ -25,7 +25,7 @@ class Disk(object):
 
     def read_from_disk(self, mode='rb'):
         with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
-            return f.read()
+            return list(f.read())
 
     def write_to_disk(self, data, mode='wb'):
         with open(os.path.join(self.disk_dir, 'disk_{}'.format(self.disk_id)), mode) as f:
