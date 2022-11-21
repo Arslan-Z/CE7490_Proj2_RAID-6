@@ -9,7 +9,7 @@ from raid.utils.file import File
 from raid.utils.raid6 import RAID6
 from raid.utils.galois_field import GaloisField
 from raid.utils.config import Config
-from raid.utils.utils import read_data, write_data, str_to_list
+from raid.utils.utils import read_data, write_data, str_to_list, remove_data
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_PATH)
@@ -76,9 +76,11 @@ class TestRaid6(object):
 
         return rebuild_data
     
-    def save_rebuid_data(self, config, rebuild_data):        
+    def save_rebuid_data(self, config, rebuild_data):  
+        remove_data(os.path.join(config['data_dir'], "rebuild_data"))
+        os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))      
         if self.config["mode"] == 0:
-            os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
+            # os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
             file_name = os.path.join(
                 config['data_dir'], "rebuild_data/")+"rebuild_data"
             with open(file_name, mode="wb") as f:
@@ -86,7 +88,7 @@ class TestRaid6(object):
 
         elif self.config["mode"] == 1:
             file_name = os.path.join(
-                config['data_dir'], "real_data/")+"rebuild_"+config["real_file_name"]
+                config['data_dir'], "rebuild_data/")+"rebuild_"+config["real_file_name"]
             with open(file_name, mode="wb") as f:
                 f.write(bytes(rebuild_data))
         print("Done writing rebuild data!")
@@ -131,7 +133,8 @@ class TestRaid6(object):
         self.print_spliter()
         rebuild_data = self.test_recovery_disk(
             config, corrupted_disks_list)
-        self.save_rebuid_data(config, rebuild_data)
+        if config["is_save_rebuild"]:
+            self.save_rebuid_data(config, rebuild_data)
         self.print_spliter()
 
         print(" "*9+"Finish all test pipeline!")
