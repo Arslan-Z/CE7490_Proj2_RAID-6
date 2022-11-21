@@ -31,25 +31,25 @@ class TestRaid6(object):
 
         self.test_pipeline(config)
 
-    def test_pipeline(self, config):
+    def prepare_data(self, config):
         file = File(1)
         file.generate_random_data(32)
         raw_data = file.get_content()
         print("raw_data: ", raw_data)
         logical_disk = Disk(-1, config['data_dir'],
                             config["stripe_size"], type="data")
-
         logical_disk.write_to_disk(raw_data)
         data_blocks, content_size = logical_disk.get_data_blocks()
+        return data_blocks, content_size
 
+    def init_raid_controller(self, content_size, data_blocks):
         self.raid_controller.set_content_size(content_size)
-
         self.raid_controller.write_to_disk(data_blocks)
 
-        corrupted_disks_list = [0, 2]
-
+    def test_corrupt_disk(self, corrupted_disks_list):
         self.raid_controller.corrupt_disk(corrupted_disks_list)
 
+    def test_recovery_disk(self, config, corrupted_disks_list):
         self.raid_controller.recover_disk(corrupted_disks_list)
 
         rebuild_data = self.raid_controller.read_from_disks(config)
@@ -61,7 +61,33 @@ class TestRaid6(object):
         rebuild_data = str_to_list(rebuild_data_str)
 
         print("rebuild_data: ", rebuild_data)
+        return rebuild_data
         # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
+
+    def test_pipeline(self, config):
+
+        data_blocks, content_size = self.prepare_data(config)
+
+        self.init_raid_controller(content_size, data_blocks)
+
+        corrupted_disks_list = [0, 2]
+
+        self.test_corrupt_disk(corrupted_disks_list)
+
+        rebuild_data = self.test_recovery_disk(config, corrupted_disks_list)
+
+        # self.raid_controller.recover_disk(corrupted_disks_list)
+
+        # rebuild_data = self.raid_controller.read_from_disks(config)
+        # # print("rebuild_data: ", rebuild_data)
+        # # print("raw_data: ", raw_data)
+        # rebuild_data_str = "".join([chr(i) for i in rebuild_data])
+        # # rebuild_data_str = [chr(i) for i in rebuild_data]
+        # print("rebuild_data str: ", rebuild_data_str)
+        # rebuild_data = str_to_list(rebuild_data_str)
+
+        # print("rebuild_data: ", rebuild_data)
+        # # write_data(os.path.join(config['data_dir'], "rebuild_data"), rebuild_data)
 
     def build_test_log_dir(self, config):
         test_log_dir = os.path.join(
