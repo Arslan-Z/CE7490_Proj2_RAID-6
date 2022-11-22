@@ -1,4 +1,6 @@
 import os
+from os import makedirs
+from os.path import exists
 import time
 from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data
 
@@ -65,8 +67,10 @@ class TestRaid6(object):
         return rebuild_data
     
     def save_rebuid_data(self, config, rebuild_data):  
-        remove_data(os.path.join(config['data_dir'], "rebuild_data"))
-        os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))      
+        rebuilt_path = os.path.join(config['data_dir'], "rebuild_data")
+        if exists(rebuilt_path):
+            remove_data(rebuilt_path)
+        makedirs(rebuilt_path)      
         if self.config["mode"] == 0:
             # os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
             file_name = os.path.join(

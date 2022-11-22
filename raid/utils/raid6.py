@@ -95,7 +95,7 @@ class RAID6(object):
         print("Write data disk and parity disk done")
 
     def caculate_parity(self, data):
-        return self.galois_field.matmul(self.galois_field.vender_mat, data)
+        return self.galois_field.matmul(self.galois_field.Vmat, data)
 
     def corrupt_disk(self, corrupted_disks_list):
         for i in corrupted_disks_list:
@@ -113,7 +113,7 @@ class RAID6(object):
 
         # matrix I concatenated by n x n identity matrix and vandermond matrix
         mat_I_V = np.concatenate([np.eye(
-            self.config['data_disks_num'], dtype=int), self.galois_field.vender_mat], axis=0)
+            self.config['data_disks_num'], dtype=int), self.galois_field.Vmat], axis=0)
         mat_I_V_delete = np.delete(mat_I_V, obj=corrupted_disks_list, axis=0)
         
         mat_D_P_delete = healthy_data
@@ -121,7 +121,7 @@ class RAID6(object):
         mat_D = self.galois_field.matmul(
             self.galois_field.inv(mat_I_V_delete), mat_D_P_delete)
         
-        mat_P = self.galois_field.matmul(self.galois_field.vender_mat, mat_D)
+        mat_P = self.galois_field.matmul(self.galois_field.Vmat, mat_D)
         
         mat_D_P = np.concatenate([mat_D, mat_P], axis=0)
         
