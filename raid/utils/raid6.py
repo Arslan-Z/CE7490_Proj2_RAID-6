@@ -40,28 +40,47 @@ class RAID6(object):
             config)
         self.parity_disks, self.parity_disks_id_list = self.build_parity_disks(
             config)
-
+        self.all_disks = self.data_disks + self.parity_disks
+        
     def set_content_size(self, content_size):
         self.content_size = content_size
 
     def set_total_stripe(self, total_stripe):
         self.stripe_num = total_stripe
 
-    def read_from_disks(self, config):
+    def read_from_disks(self, config, corrupted_disks_list=[]):
         data = []
-        all_disks = self.data_disks + self.parity_disks
-        for i in range(config['data_disks_num']):
-            disk = all_disks[i]
-            try:
-                file_content = disk.read_from_disk()
-                # file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
-                data += list(file_content)
-            except:
-                print("Read data disk {} failed, dir not exist".format(i))
-        # print("Len of data is {}".format(len(data)))
-        data = data[:self.content_size]
-        return data
 
+        for disk in self.all_disks:
+            
+            if disk.disk_id not in corrupted_disks_list:
+                try:
+                    file_content = disk.read_from_disk()
+                    # file_content=read_data(os.path.join(os.path.join(config['data_dir'], "disk_{}".format(i)), "disk_{}".format(i)))
+                    data += list(file_content)
+                except:
+                    print("Read data disk {} failed, dir not exist".format(disk.disk_id))
+        # print("Len of data is {}".format(len(data)))
+        # data = np.asarray(data).reshape(self.config['data_disks_num'], -1)
+        # data = self.shift_data_group(data, 1)
+        
+        return data
+    
+    def get_content(self, data):
+        return data[:self.content_size]
+    
+    def shift_data_group(self, data_array, direction):
+        """_summary_: shift data group to left or right
+        Args:
+            data_array (np array): _description_
+            direction (int): shift direction, -1 for left, 1 for right
+        Returns:
+            np array: data array after shift
+        """
+        for i in range(data_array.shape[0]):
+            data_array[i] = np.roll(data_array[i], i*direction, axis=0)
+        return data_array
+        
     def write_to_disk(self, data_blocks):
         # print("data_blocks : {}".format(data_blocks))
         # print("stripe_num : {}".format(self.stripe_num))
@@ -74,7 +93,9 @@ class RAID6(object):
         self.parity = parity_blocks
         data_and_parity = np.concatenate((data_blocks, parity_blocks), axis=0)
 
-        for disk, data in zip(self.data_disks + self.parity_disks, data_and_parity):
+        # data_and_parity = self.shift_data_group(data_and_parity, -1)
+        
+        for disk, data in zip(self.all_disks, data_and_parity):
             disk.write_to_disk(data.tolist())
         print("Write data disk and parity disk done")
 
@@ -90,44 +111,34 @@ class RAID6(object):
     def recover_disk(self, corrupted_disks_list):
         print("Try to recover disks {}".format(corrupted_disks_list))
         assert len(corrupted_disks_list) <= self.config['parity_disks_num']
+        
+        healthy_data = self.read_from_disks(self.config, corrupted_disks_list)
+        healthy_data = np.asarray(healthy_data).reshape(
+            self.config['disks_num']-len(corrupted_disks_list), -1)
 
-        healthy_data_disk_id_list = [
-            i for i in self.data_disks_id_list if i not in corrupted_disks_list]
-        healthy_parity_disk_id_list = [
-            i for i in self.parity_disks_id_list if i not in corrupted_disks_list]
-
-        all_disks = self.data_disks + self.parity_disks
-
-        healthy_data = [all_disks[i].read_from_disk()
-                        for i in healthy_data_disk_id_list]
-
-        healthy_parity = [all_disks[i].read_from_disk()
-                          for i in healthy_parity_disk_id_list]
-
-        # healthy_data = [read_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(
-        #     i)), "disk_{}".format(i))) for i in healthy_data_disks]
-        # healthy_parity = [read_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(
-        #     i)), "disk_{}".format(i))) for i in healthy_parity_disks]
-
-        # matrix A concatenated by n x n identity matrix and vandermond matrix
-        mat_A = np.concatenate([np.eye(
+        # matrix I concatenated by n x n identity matrix and vandermond matrix
+        mat_I_V = np.concatenate([np.eye(
             self.config['data_disks_num'], dtype=int), self.galois_field.vender_mat], axis=0)
-        mat_A_delete = np.delete(mat_A, obj=corrupted_disks_list, axis=0)
-
-        # matrix E concatenated vector by byte in data disks and checksums
-        mat_E_delete = np.concatenate(
-            [np.asarray(healthy_data), np.asarray(healthy_parity)], axis=0)
+        mat_I_V_delete = np.delete(mat_I_V, obj=corrupted_disks_list, axis=0)
+        
+        mat_D_P_delete = healthy_data
+        
         mat_D = self.galois_field.matmul(
-            self.galois_field.inv(mat_A_delete), mat_E_delete)
-        mat_C = self.galois_field.matmul(self.galois_field.vender_mat, mat_D)
-        mat_E = np.concatenate([mat_D, mat_C], axis=0)
-        all_disk = self.data_disks + self.parity_disks
+            self.galois_field.inv(mat_I_V_delete), mat_D_P_delete)
+        
+        mat_P = self.galois_field.matmul(self.galois_field.vender_mat, mat_D)
+        
+        mat_D_P = np.concatenate([mat_D, mat_P], axis=0)
+        
+        
         corrupted_disk = [
-            disk for disk in all_disk if disk.disk_id in corrupted_disks_list]
+            disk for disk in self.all_disks if disk.disk_id in corrupted_disks_list]
         [disk.create_disk_folders() for disk in corrupted_disk]
-
+        
+        # mat_E = self.shift_data_group(mat_E, -1)
+        
         for i, disk in zip(corrupted_disks_list, corrupted_disk):
-            disk.write_to_disk(bytes(mat_E[i, :].tolist()))
+            disk.write_to_disk(bytes(mat_D_P[i, :].tolist()))
             print("Recover disk {}".format(i))
 
         # [write_data(os.path.join(os.path.join(self.config['data_dir'], "disk_{}".format(
@@ -136,7 +147,8 @@ class RAID6(object):
         print("Recover data done!")
 
     def check_corruption(self):
-        data_content = self.read_from_disks(self.config)
+        data = self.read_from_disks(self.config)
+        data_content = self.get_content(data)
         data_content = np.asarray(data_content, dtype=int)
         # print(data_content.shape)
         data_content = data_content.reshape(
