@@ -8,7 +8,7 @@ class Config(object):
         self.config_file = config_file
         self.config = self.load_config()
         assert self.config['disks_num'] == self.config['data_disks_num'] + \
-            self.config['parity_disks_num']
+            self.config['parity_disks_num'], "disks_num != data_disks_num + parity_disks_num"
         # assert self.config['block_size'] % 4 == 0
         # assert self.config['group_size'] % self.config["block_size"] == 0
         self.config["stripe_size"] = self.config['group_size'] * \
