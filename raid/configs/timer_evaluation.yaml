@@ -1,0 +1,17 @@
+disks_num: 6
+data_disks_num: 4
+parity_disks_num: 2
+chunk_size: 4
+# block_size: 4
+data_dir: "data/"
+# test_dir: "data/testlog"
+
+random_data_size: 1024
+
+mode: 1 #real data mode = 1, synthetic random data mode = 0
+real_file_name: "NTU_Logo.png"
+is_save_rebuild: False
+
+timer_mode: 0 # 0: evaluate read time, 1: evaluate write time, 2: evaluate rebuild time
+group_size_list:
+  [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]

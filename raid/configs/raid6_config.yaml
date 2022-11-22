@@ -1,4 +1,4 @@
-disks_num: 7
+disks_num: 6
 data_disks_num: 4
 parity_disks_num: 3
 group_size: 8192

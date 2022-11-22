@@ -7,7 +7,7 @@ from .galois_field import GaloisField
 from .disk import Disk
 from .utils import remove_data, split_data, ROOT_DIR
 
-
+timer = Timer()
 class RAID6(object):
     def __init__(self, config):
         self.config = config
@@ -37,7 +37,7 @@ class RAID6(object):
 
     def read_from_disks(self, corrupted_disks_list=[]):
         data = []
-
+        
         for disk in self.all_disks:
 
             if disk.disk_id not in corrupted_disks_list:
