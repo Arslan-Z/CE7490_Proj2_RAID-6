@@ -4,7 +4,7 @@ import logging
 import shutil
 
 from numpy.core.shape_base import block
-from raid.utils.utils import read_data, write_data, remove_data
+from .utils import read_data, write_data, remove_data
 
 
 class Disk(object):

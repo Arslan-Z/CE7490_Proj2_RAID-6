@@ -1,28 +1,15 @@
 import os
-import sys
-import numpy as np
 import time
-import PIL.Image as Image
-from raid.utils.config import Config
-from raid.utils.disk import Disk
-from raid.utils.file import File
-from raid.utils.raid6 import RAID6
-from raid.utils.galois_field import GaloisField
-from raid.utils.config import Config
-from raid.utils.utils import read_data, write_data, str_to_list, remove_data
+from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(CURRENT_PATH)
-# PAR_PATH = os.path.abspath(os.path.join(CURRENT_PATH, os.pardir))
-# sys.path.append(PAR_PATH)
 
 
 class TestRaid6(object):
     def __init__(self, config):
         self.print_spliter()
         print(" "*9+"Start the test pipeline!")
-        config['data_dir'] = os.path.join(CURRENT_PATH, config['data_dir'])
-        config['test_dir'] = os.path.join(CURRENT_PATH, config['test_dir'])
+        config['data_dir'] = os.path.join(ROOT_DIR, config['data_dir'])
+        config['test_dir'] = os.path.join(ROOT_DIR, config['test_dir'])
 
         test_log_dir = self.build_test_log_dir(config)
         config["test_log_dir"] = test_log_dir

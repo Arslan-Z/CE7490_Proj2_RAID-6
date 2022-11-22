@@ -1,5 +1,8 @@
-import os
+from os import pardir
+from os.path import abspath, dirname, join
 import shutil
+
+ROOT_DIR = abspath(join(dirname(__file__), pardir, pardir))
 
 
 def write_data(file_name, data, mode='wb'):

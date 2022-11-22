@@ -1,15 +1,10 @@
-import sys
 import os
 import numpy as np
-import math
-import time
 import shutil
 
-from raid.utils.galois_field import GaloisField
-from raid.utils.config import Config
-from raid.utils.disk import Disk
-from raid.utils.file import File
-from raid.utils.utils import read_data, write_data, remove_data
+from .galois_field import GaloisField
+from .disk import Disk
+from .utils import read_data, write_data, remove_data
 
 
 class RAID6(object):
