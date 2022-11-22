@@ -57,6 +57,7 @@ class TestRaid6(object):
         self.raid_controller.recover_disk(corrupted_disks_list)
 
         rebuild_data = self.raid_controller.read_from_disks(config)
+        rebuild_data = self.raid_controller.get_content(rebuild_data)
         # print("rebuild_data: ", rebuild_data)
         # print("raw_data: ", raw_data)
         # rebuild_data_str = [chr(i) for i in rebuild_data]
@@ -114,7 +115,7 @@ class TestRaid6(object):
         # # detected_corrupted_disks = self.test_corrupted_disks_detection()
 
         self.print_spliter()
-        corrupted_disks_list = [0, 1]
+        corrupted_disks_list = [0, 6]
         self.test_corrupt_disk(corrupted_disks_list)
 
         self.print_spliter()
