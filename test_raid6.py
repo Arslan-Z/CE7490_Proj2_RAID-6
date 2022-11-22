@@ -2,7 +2,7 @@ import os
 from os import makedirs
 from os.path import exists
 import time
-from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data
+from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data, write_data
 
 
 class TestRaid6(object):
@@ -56,14 +56,12 @@ class TestRaid6(object):
             # os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
             file_name = os.path.join(
                 config['data_dir'], "rebuild_data/")+"rebuild_data"
-            with open(file_name, mode="wb") as f:
-                f.write(bytes(rebuild_data))
+            write_data(file_name, rebuild_data)
 
         elif self.config["mode"] == 1:
             file_name = os.path.join(
                 config['data_dir'], "rebuild_data/")+"rebuild_"+config["real_file_name"]
-            with open(file_name, mode="wb") as f:
-                f.write(bytes(rebuild_data))
+            write_data(file_name, rebuild_data)
         print("Done writing rebuild data!")
 
     def manual_distort_data(self, disk_id, distort_loc):
