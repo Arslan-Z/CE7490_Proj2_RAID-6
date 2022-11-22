@@ -6,14 +6,7 @@ import os
 import numpy
 import pandas
 import matplotlib.pyplot as plt
-from raid.utils.config import Config
-from raid.utils.disk import Disk
-from raid.utils.file import File
-from raid.utils.raid6 import RAID6
-from raid.utils.galois_field import GaloisField
-from raid.utils.config import Config
-from raid.utils.utils import read_data, write_data, str_to_list, remove_data, raw_data
-from raid.utils.timer import Timer
+from raid.utils import Config, File, RAID6, Timer, read_data, write_data
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_PATH)
