@@ -68,6 +68,12 @@ class GaloisField(object):
             result = self.__add(result, self.__mul(x[i], y[i]))
         return result
 
+    def matmul_3d(self, X, mat_3d):
+        result = np.zeros((mat_3d.shape[0], X.shape[0], mat_3d.shape[-1]), dtype=np.int)
+        for i in range(len(mat_3d)):
+            result[i] = self.matmul(X, mat_3d[i])
+        return result
+
     def matmul(self, X, Y):
         if X.shape[1] != Y.shape[0]:
             raise ValueError
