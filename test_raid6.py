@@ -128,7 +128,7 @@ class TestRaid6(object):
         # # detected_corrupted_disks = self.test_corrupted_disks_detection()
 
         self.print_spliter()
-        corrupted_disks_list = [0, 6]
+        corrupted_disks_list = [0, 5]
         self.test_corrupt_disk(corrupted_disks_list)
 
         self.print_spliter()

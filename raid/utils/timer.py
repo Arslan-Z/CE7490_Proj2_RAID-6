@@ -1,4 +1,5 @@
 import time
+# import pandas as pd
 
 class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
@@ -7,6 +8,7 @@ class TimerError(Exception):
 class Timer(object):
     def __init__(self):
         self._start_time = None
+        self._time_record = {}
         
     def start(self):
         if self._start_time is not None:
@@ -19,6 +21,13 @@ class Timer(object):
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
         return elapsed_time
+    
+    def record_time(self, event_name):
+        time_duration = self.stop()
+        self._time_record[event_name] = time_duration
+        
+    def get_time_record(self):
+        return self._time_record
     
 if __name__ == "__main__":
     timer = Timer()

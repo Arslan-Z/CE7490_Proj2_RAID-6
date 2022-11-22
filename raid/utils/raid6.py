@@ -10,8 +10,9 @@ from raid.utils.config import Config
 from raid.utils.disk import Disk
 from raid.utils.file import File
 from raid.utils.utils import read_data, write_data, remove_data
+from raid.utils.timer import Timer
 
-
+timer = Timer()
 class RAID6(object):
     def __init__(self, config):
         self.config = config
@@ -50,7 +51,7 @@ class RAID6(object):
 
     def read_from_disks(self, config, corrupted_disks_list=[]):
         data = []
-
+        
         for disk in self.all_disks:
             
             if disk.disk_id not in corrupted_disks_list:
