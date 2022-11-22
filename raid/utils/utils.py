@@ -33,28 +33,28 @@ def str_to_bytes(string):
 def list_to_str(list):
     return ''.join(list)
 
-def split_data(stripe_size, data_content):
-    """Split data into stripes of size stripe_size
+def split_data(strip_size, data_content):
+    """Split data into strips of size strip_size
 
     Args:
-        stripe_size (int): Size of each stripe
+        strip_size (int): Size of each strip
         data_content (list): Data
 
     Returns:
-        tuple(data_blocks, content_size, total_stripe)
+        tuple(data_blocks, content_size, total_strip)
     """    
-    assert stripe_size, 'stripe_size must be set'
+    assert strip_size, 'strip_size must be set'
 
     content_size = len(data_content)
     print("content_size", content_size)
 
     data_blocks = []
-    if content_size % stripe_size != 0:
-        data_content += [0 for _ in range(stripe_size -
-                                            content_size % stripe_size)]
-    total_stripe = len(data_content) // stripe_size
-    print("total_stripe", total_stripe)
-    data_blocks = [data_content[i:i+stripe_size]
-                    for i in range(0, len(data_content), stripe_size)]
+    if content_size % strip_size != 0:
+        data_content += [0 for _ in range(strip_size -
+                                            content_size % strip_size)]
+    total_strip = len(data_content) // strip_size
+    print("total_strip", total_strip)
+    data_blocks = [data_content[i:i+strip_size]
+                    for i in range(0, len(data_content), strip_size)]
     # print("data_blocks len", len(data_blocks))
-    return data_blocks, content_size, total_stripe
+    return data_blocks, content_size, total_strip

@@ -41,9 +41,7 @@ class TestRaid6(object):
 
     def rebuild_data(self, corrupted_disks_list):
         self.raid_controller.recover_disks(corrupted_disks_list)
-
-        rebuild_data = self.raid_controller.read_from_disks()
-        rebuild_data = self.raid_controller.get_content(rebuild_data)
+        rebuild_data = self.raid_controller.get_content()
 
         return rebuild_data
 
@@ -100,8 +98,6 @@ class TestRaid6(object):
         failed_disks_id = self.raid_controller.detect_failed_disks_id()
         self.print_spliter()
         data_rebuilt = self.rebuild_data(failed_disks_id)
-
-        self.raid_controller.recover_disks(failed_disks_id)
 
         if config["is_save_rebuild"]:
             self.save_rebuid_data(config, data_rebuilt)
