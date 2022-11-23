@@ -145,4 +145,4 @@ class TestRaid6(object):
 
 if __name__ == "__main__":
     config = Config("raid/configs/raid6_config.yaml")
-    test_raid6 = RAID6Test(config.config)
+    test_raid6 = TestRaid6(config.config)

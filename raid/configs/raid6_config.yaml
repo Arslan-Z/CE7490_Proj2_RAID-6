@@ -8,6 +8,6 @@ test_dir: "data/testlog"
 
 random_data_size: 2048
 
-mode: 0 #real data mode = 1, synthetic random data mode = 0
+mode: 1 #real data mode = 1, synthetic random data mode = 0
 real_file_name: "NTU_Logo.png"
 is_save_rebuild: True
