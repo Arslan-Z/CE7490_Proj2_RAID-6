@@ -1,0 +1,36 @@
+# # used for synthetic data evaluation
+# disks_num: 6
+# data_disks_num: 4
+# parity_disks_num: 2
+
+# # used for real data evaluation
+disks_num: 7
+data_disks_num: 4
+parity_disks_num: 3
+
+group_size: 0
+# block_size: 4
+data_dir: "data/"
+# test_dir: "data/testlog"
+
+random_data_size: 102400 #400KB
+
+mode: 1 #real data mode = 1, synthetic random data mode = 0
+real_file_name: "NTU_Logo.png"
+is_save_rebuild: False
+
+timer_mode: 1 # 0: evaluate read time, 1: evaluate write time, 2: evaluate rebuild time
+group_size_list: [
+    64,
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192,
+    # 9216,
+    # 10240,
+    16384,
+    # 20480,
+    32768,
+  ]

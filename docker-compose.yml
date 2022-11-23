@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  CE7490_P2:
+    image: phatli/ce7490_proj2
+    stdin_open: true
+    tty: true
+    ipc: host
+    user: "${UID}:${GID}"
+    volumes:
+      - type: bind
+        source: ./
+        target: /home/user/ce7490_proj2
+    dns:
+      - 8.8.8.8
