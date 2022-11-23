@@ -1,83 +1,88 @@
 import numpy as np
 
+
 class GaloisField(object):
-    def __init__(self, config, w=8, modulus=0b100011101):
+    def __init__(self, config, w=8, polynomial=0x11d):
         self.config = config
-        self.w = w
-        self.x_to_w = 1 << w 
-        self.modulus = modulus
-        self.gflog, self.gfilog = self.build_log_table()
-        self.vender_mat = self.build_vender_mat()
-        
-    def build_log_table(self):
-        gflog = np.zeros(self.x_to_w, dtype=np.int)
-        gfilog = np.zeros(self.x_to_w, dtype=np.int)
+        self.gf_len = 1 << w
+        self.polynomial = polynomial
+        self.__build_tables()
+        self.__build_Vmat()
+
+    def __len__(self):
+        return self.gf_len
+
+    def __build_tables(self):
+        self.gflog = np.zeros(self.gf_len, dtype=np.int)
+        self.gfilog = np.zeros(self.gf_len, dtype=np.int)
         x = 1
-        for i in range(self.x_to_w - 1):
-            gflog[x] = i
-            gfilog[i] = x
+        for i in range(self.gf_len):
+            self.gflog[x] = i
+            self.gfilog[i] = x
             x = x << 1
-            if x & self.x_to_w:
-                x = x ^ self.modulus
-        return gflog, gfilog
-    
-    def build_vender_mat(self):
-        vender_mat = np.zeros((self.config['parity_disks_num'], self.config['data_disks_num']), dtype=np.int)
+            if x & self.gf_len:
+                x ^= self.polynomial
+
+    def __build_Vmat(self):
+        self.Vmat = np.zeros(
+            (self.config['parity_disks_num'], self.config['data_disks_num']), dtype=np.int)
         for i in range(self.config['parity_disks_num']):
             for j in range(self.config['data_disks_num']):
-                vender_mat[i][j] = self.power(j+1, i)
-        return vender_mat
-        
-    def add(self, x, y):
+                self.Vmat[i][j] = self.__power(j+1, i)
+
+    def __add(self, x, y):
         return x ^ y
-    
-    def sub(self, x, y):
+
+    def __sub(self, x, y):
         return x ^ y
-    
-    def power(self, x, n):
-        n %= self.x_to_w - 1
+
+    def __power(self, x, n):
+        n %= self.gf_len - 1
         result = 1
         while True:
             if n == 0:
                 return result
             n -= 1
-            result = self.multiply(x, result)
+            result = self.__mul(x, result)
 
-    def multiply(self, x, y):
+    def __mul(self, x, y):
         if x == 0 or y == 0:
             return 0
-        sum_log = self.gflog[x] + self.gflog[y]
-        if sum_log >= self.x_to_w - 1:
-            sum_log -= self.x_to_w - 1
-        return self.gfilog[sum_log]
-        
-    def divide(self, x, y):
+        else:
+            return self.gfilog[(self.gflog[x]+self.gflog[y]) % (self.gf_len-1)]
+
+    def __div(self, x, y):
         if y == 0:
             raise ZeroDivisionError
         if x == 0:
             return 0
         diff_log = self.gflog[x] - self.gflog[y]
         if diff_log < 0:
-            diff_log += self.x_to_w - 1
+            diff_log += self.gf_len - 1
         return self.gfilog[diff_log]
-    
-    def dot(self, x, y):
-        if x.size != y.size:
-            raise ValueError
+
+    def __dot(self, x, y):
+        assert x.size == y.size, "Size unmatched to conduct dot product"
         result = 0
         for i in range(x.size):
-            result = self.add(result, self.multiply(x[i], y[i]))
+            result = self.__add(result, self.__mul(x[i], y[i]))
         return result
-    
+
+    def matmul_3d(self, X, mat_3d):
+        result = np.zeros((mat_3d.shape[0], X.shape[0], mat_3d.shape[-1]), dtype=np.int)
+        for i in range(len(mat_3d)):
+            result[i] = self.matmul(X, mat_3d[i])
+        return result
+
     def matmul(self, X, Y):
         if X.shape[1] != Y.shape[0]:
             raise ValueError
         result = np.zeros((X.shape[0], Y.shape[1]), dtype=np.int)
         for i in range(X.shape[0]):
             for j in range(Y.shape[1]):
-                result[i, j] = self.dot(X[i, :], Y[:, j])
+                result[i, j] = self.__dot(X[i, :], Y[:, j])
         return result
-    
+
     def inv(self, X):
         # if X == 0:
         #     raise ZeroDivisionError
@@ -95,13 +100,16 @@ class GaloisField(object):
                 for j in range(i+1, dim):
                     if X_[j, i]:
                         break
-                X_[i, :] = list(map(self.add, X_[i, :], X_[j, :]))
-            X_[i, :] = list(map(self.divide, X_[i, :], [X_[i, i]] * len(X_[i, :])))
+                X_[i, :] = list(map(self.__add, X_[i, :], X_[j, :]))
+            X_[i, :] = list(map(self.__div, X_[i, :], [
+                            X_[i, i]] * len(X_[i, :])))
             for j in range(i+1, dim):
-                X_[j, :] = self.add(X_[j, :],  list(map(self.multiply, X_[i, :], [self.divide(X_[j, i], X_[i, i])] * len(X_[i, :]))))
+                X_[j, :] = self.__add(X_[j, :],  list(
+                    map(self.__mul, X_[i, :], [self.__div(X_[j, i], X_[i, i])] * len(X_[i, :]))))
         for i in reversed(range(dim)):
             for j in range(i):
-                X_[j, :] = self.add(X_[j, :], list(map(self.multiply, X_[i, :], [X_[j, i]] * len(X_[i, :]))))
+                X_[j, :] = self.__add(X_[j, :], list(
+                    map(self.__mul, X_[i, :], [X_[j, i]] * len(X_[i, :]))))
         X_inv = X_[:, dim:2*dim]
         if X.shape[0] != X.shape[1]:
             X_inv = self.matmul(X_inv, X_T)

@@ -8,10 +8,8 @@ class Config(object):
         self.config_file = config_file
         self.config = self.load_config()
         assert self.config['disks_num'] == self.config['data_disks_num'] + \
-            self.config['parity_disks_num']
-        # assert self.config['block_size'] % 4 == 0
-        # assert self.config['chunk_size'] % self.config["block_size"] == 0
-        self.config["stripe_size"] = self.config['chunk_size'] * \
+            self.config['parity_disks_num'], "disks_num != data_disks_num + parity_disks_num"
+        self.config["strip_size"] = self.config['group_size'] * \
             self.config['data_disks_num']
         self.print_config()
 
@@ -20,7 +18,7 @@ class Config(object):
         print("disks_num: {}".format(self.config['disks_num']))
         print("data_disks_num: {}".format(self.config['data_disks_num']))
         print("parity_disks_num: {}".format(self.config['parity_disks_num']))
-        print("chunk_size: {}".format(self.config['chunk_size']))
+        print("group_size: {}".format(self.config['group_size']))
 
     def load_config(self):
         with open(self.config_file, 'r') as f:
@@ -33,5 +31,3 @@ class Config(object):
 
 if __name__ == '__main__':
     config = Config('raid6_config.yaml')
-    # config.print_config()
-    # print(config.get_config())
