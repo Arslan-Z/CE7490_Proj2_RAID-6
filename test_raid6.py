@@ -2,13 +2,13 @@ import os
 from os import makedirs
 from os.path import exists
 import time
-from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data
+from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_data, write_data
 
 
 class TestRaid6(object):
     def __init__(self, config):
         self.print_spliter()
-        print(" "*9+"Start the test pipeline!")
+        print(" "*5+"Start the test pipeline!")
         config['data_dir'] = os.path.join(ROOT_DIR, config['data_dir'])
         config['test_dir'] = os.path.join(ROOT_DIR, config['test_dir'])
 
@@ -54,14 +54,12 @@ class TestRaid6(object):
             # os.mkdir(os.path.join(config['data_dir'], "rebuild_data"))
             file_name = os.path.join(
                 config['data_dir'], "rebuild_data/")+"rebuild_data"
-            with open(file_name, mode="wb") as f:
-                f.write(bytes(rebuild_data))
+            write_data(file_name, rebuild_data)
 
         elif self.config["mode"] == 1:
             file_name = os.path.join(
                 config['data_dir'], "rebuild_data/")+"rebuild_"+config["real_file_name"]
-            with open(file_name, mode="wb") as f:
-                f.write(bytes(rebuild_data))
+            write_data(file_name, rebuild_data)
         print("Done writing rebuild data!")
 
     def manual_distort_data(self, disk_id, distort_loc):
@@ -93,7 +91,7 @@ class TestRaid6(object):
         self.raid_controller.distribute_to_disks(data)
 
         self.print_spliter()
-        corrupted_disks_list = [0, 6]
+        corrupted_disks_list = [0, 2]
         self.raid_controller.remove_disks(corrupted_disks_list)
         failed_disks_id = self.raid_controller.detect_failed_disks_id()
         self.print_spliter()
@@ -103,7 +101,7 @@ class TestRaid6(object):
             self.save_rebuid_data(config, data_rebuilt)
         self.print_spliter()
 
-        print(" "*9+"Finish all test pipeline!")
+        print(" "*5+"Finish all test pipeline!")
         self.print_spliter()
 
     def build_test_log_dir(self, config):

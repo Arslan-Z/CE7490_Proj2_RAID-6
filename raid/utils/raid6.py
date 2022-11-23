@@ -7,7 +7,6 @@ from .galois_field import GaloisField
 from .disk import Disk
 from .utils import remove_data, split_data, ROOT_DIR
 
-
 class RAID6(object):
     def __init__(self, config):
         self.config = config
@@ -108,7 +107,7 @@ class RAID6(object):
                 self.all_disks[k].write_to_disk(
                     group_name, data_and_parity[i][j].tolist())
 
-        print("Write data disk and parity disk done")
+        print("Write data and parity data done")
 
     def remove_disks(self, corrupted_disks_list):
         for i in corrupted_disks_list:
