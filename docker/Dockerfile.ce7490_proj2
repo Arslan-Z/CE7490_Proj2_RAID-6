@@ -1,7 +1,7 @@
 FROM phatli/base:2004
 
 RUN sudo apt update; exit 0
-RUN pip install --no-cache-dir pandas matplotlib numpy ipykernel autopep8 PyYAML
+RUN pip install --no-cache-dir pandas matplotlib numpy ipykernel autopep8 PyYAML numba
 
 ENTRYPOINT [ "/bin/zsh" ]
 CMD ["-l"]

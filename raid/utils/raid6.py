@@ -7,13 +7,14 @@ from .galois_field import GaloisField
 from .disk import Disk
 from .utils import remove_data, split_data, ROOT_DIR
 
+
 class RAID6(object):
     def __init__(self, config):
         self.config = config
         self.m = config['parity_disks_num']
         self.k = config['data_disks_num']
         self.n = self.k+self.m
-        self.galois_field = GaloisField(config)
+        self.galois_field = GaloisField(m=self.m, k=self.k)
         self.DISK_ROOT = join(ROOT_DIR, config['data_dir'], "disks")
         self.__organize_disks()
 
@@ -29,7 +30,8 @@ class RAID6(object):
         self.__build_disks()
 
     def __caculate_parity(self, data):
-        return self.galois_field.matmul_3d(self.galois_field.Vmat, data)
+        output_shape = (data.shape[0], self.m, data.shape[-1])
+        return self.galois_field.matmul_3d(self.galois_field.Vmat, data, output_shape)
 
     def __get_group_name(self, i, j):
         if j < self.k:
