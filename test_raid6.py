@@ -6,14 +6,15 @@ from raid.utils import Config, Disk, File, RAID6, ROOT_DIR, remove_data, read_da
 
 
 class TestRaid6(object):
-    def __init__(self, config):
+    def __init__(self, config, save_test_log=False):
         self.print_spliter()
         print(" "*5+"Start the test pipeline!")
         config['data_dir'] = os.path.join(ROOT_DIR, config['data_dir'])
         config['test_dir'] = os.path.join(ROOT_DIR, config['test_dir'])
 
-        test_log_dir = self.build_test_log_dir(config)
-        config["test_log_dir"] = test_log_dir
+        if save_test_log:
+            test_log_dir = self.build_test_log_dir(config)
+            config["test_log_dir"] = test_log_dir
 
         self.config = config
 
