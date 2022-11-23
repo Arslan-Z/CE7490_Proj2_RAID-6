@@ -54,10 +54,13 @@ class RAID6(object):
 
         return np.concatenate([mat_D, mat_P], axis=0)
 
-    def get_content(self):
-        DP = self.__read_DP()
-        data = DP[:,:self.k,:].reshape(-1).tolist()
-        return data[:self.content_size]
+    def __get_corrupted_group_id(self, corrupted_disks_list):
+        corrupted_group_id = []
+        for i in range(self.strip_num):
+            corrupted_disk_np = np.asarray(corrupted_disks_list)
+            corrupted_disk_np = (corrupted_disk_np + i) % self.n
+            corrupted_group_id.append(corrupted_disk_np.tolist())
+        return corrupted_group_id
 
     def __read_DP(self, corrupted_disks_list=[]):
         data = []
@@ -76,6 +79,11 @@ class RAID6(object):
                     data_and_parity[i][j] = np.asarray(group)
 
         return data_and_parity
+
+    def get_content(self):
+        DP = self.__read_DP()
+        data = DP[:, :self.k, :].reshape(-1).tolist()
+        return data[:self.content_size]
 
     def distribute_to_disks(self, data):
         """Split data first then distribute data to disks.
@@ -107,14 +115,6 @@ class RAID6(object):
             remove_data(os.path.join(
                 self.config['data_dir']+"disks/", "disk_{}".format(i)))
             print("Corrupt disk {}".format(i))
-
-    def __get_corrupted_group_id(self, corrupted_disks_list):
-        corrupted_group_id = []
-        for i in range(self.strip_num):
-            corrupted_disk_np = np.asarray(corrupted_disks_list)
-            corrupted_disk_np = (corrupted_disk_np + i) % self.n
-            corrupted_group_id.append(corrupted_disk_np.tolist())
-        return corrupted_group_id
 
     def recover_disks(self, corrupted_disks_list):
         print("Try to recover disks {}".format(corrupted_disks_list))
