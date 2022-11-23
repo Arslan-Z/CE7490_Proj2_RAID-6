@@ -32,26 +32,38 @@ class TimeEvaluation(object):
             self.mode_name = "rebuild time"
             test_pipeline = self.evaluate_rebuild_time
             
+        print(" "*5+"Start {} evaluation!".format(self.mode_name))
+            
         if config["mode"] == 1:
             get_data_func = self.get_real_data
         else:
             get_data_func = self.get_synthetic_data
+            
+        print(" "*5+"Use {} data!".format("real" if config["mode"] == 1 else "synthetic"))
         
         group_size_list, time_cost_list = self.evaluation(test_pipeline, get_data_func)
         
         self.visualization(group_size_list, time_cost_list)
-    
+        
+    def to_byte(self, group_size_list):
+        group_size_in_byte = list(map(lambda x: x/8, group_size_list))
+        # print("group_size_in_byte: ", group_size_in_byte)
+        return group_size_in_byte
+        
     def visualization(self, group_size_list, time_cost_list):
-        plt.plot(group_size_list, time_cost_list, 'r-')
+        group_size_list = self.to_byte(group_size_list)
         plt.xlabel('Group Size')
         plt.ylabel('Time Cost')
-        plt.gca().yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f s'))
+        plt.gca().yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2f s'))
+        plt.gca().xaxis.set_major_formatter(mticker.FormatStrFormatter('%d byte'))
         plt.title('Time Evaluation for %s' % self.mode_name)
+        plt.plot(group_size_list, time_cost_list, 'r-', label=self.mode_name)
         plt.show() 
         plt.savefig(os.path.join(self.config['data_dir'], f"{self.mode_name}_evaluation.png"))
         print("Save the visualization to %s" % os.path.join(self.config['data_dir'], f"{self.mode_name}_evaluation.png"))
         print(" "*5+"Time Evaluation pipeline finished!")
         self.print_spliter()
+        plt.cla()
         
     def evaluation(self, test_pipeline, get_data_func):
         group_size_list = self.config["group_size_list"]
@@ -106,6 +118,11 @@ class TimeEvaluation(object):
 
 if __name__ == "__main__":
     config = Config("raid/configs/time_evaluation.yaml")
-    test_raid6 = TimeEvaluation(config.config)
+    modes = [i for i in range(3)]
+    # print(modes)
+    test_raid6 = [TimeEvaluation(config.config) for config.config["timer_mode"] in modes]
+    # for mode in range(3):
+    #     config.config["timer_mode"] = mode
+    #     test_raid6 = TimeEvaluation(config.config)
 
 
